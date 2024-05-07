@@ -1,2 +1,8 @@
-# ClipboardViewer
-View the current contents of the clipboard, displaying all available data formats
+﻿# ClipboardViwer
+
+blah
+
+## Command Line
+
+PS> **.\ClipboardViewer.exe [--add path]**
+
