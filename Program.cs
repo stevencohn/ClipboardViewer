@@ -16,6 +16,8 @@ namespace ClipboardViewer
 
 	class Program
 	{
+		private bool saveStreams;
+
 
 		// clipboard must be accessed from STA thread; can either declare it here or
 		// use Threading namespace to create a new STA thread
@@ -29,6 +31,7 @@ namespace ClipboardViewer
 		private void Run(string[] args)
 		{
 			var autoConvert = args.Contains("--all") || args.Contains("--auto");
+			saveStreams = args.Any(a => a.StartsWith("--save"));
 
 			var data = Clipboard.GetDataObject();
 			var formats = data.GetFormats();
@@ -67,7 +70,7 @@ namespace ClipboardViewer
 				if (format == "Locale")
 				{
 					var value = 0;
-					for (int i=0; i < buffer.Length; i++)
+					for (int i = 0; i < buffer.Length; i++)
 					{
 						value += buffer[i] << (i * 8);
 					}
@@ -84,6 +87,21 @@ namespace ClipboardViewer
 					if (signature == ImageSignature.Unknown)
 					{
 						content = Encoding.UTF8.GetString(buffer);
+					}
+					else if (saveStreams)
+					{
+						var filetype = format == "DeviceIndependentBitmap"
+							? "dib"
+							: signature.ToString().ToLower();
+
+						var filename = Path.GetFileNameWithoutExtension(Path.GetRandomFileName())
+							+ $".{filetype}";
+
+						var outpath = Path.Combine(Path.GetTempPath(), filename);
+						using var outstream = new FileStream(outpath, FileMode.CreateNew);
+						outstream.Write(buffer, 0, buffer.Length);
+
+						content = $"<< image: {signature} @ {outpath} >>";
 					}
 					else
 					{
