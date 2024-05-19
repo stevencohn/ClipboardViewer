@@ -77,6 +77,10 @@ namespace ClipboardViewer
 
 					content = value.ToString();
 				}
+				else if (format == "OneNote 2016 Internal")
+				{
+					content = "<< internal >>";
+				}
 				else
 				{
 					bytehead = buffer.Take(10).Aggregate("", (a, b) => $"{a:x02}0x{b:x02} ");
