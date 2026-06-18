@@ -30,7 +30,7 @@ namespace ClipboardViewer
 
 		private void Run(string[] args)
 		{
-			var autoConvert = args.Contains("--all") || args.Contains("--auto");
+			var autoConvert = args.Any(a => a.StartsWith("--auto"));
 			saveStreams = args.Any(a => a.StartsWith("--save"));
 
 			var data = Clipboard.GetDataObject();
@@ -47,7 +47,7 @@ namespace ClipboardViewer
 			}
 		}
 
-		private void DumpFormats(string[] formats)
+		private static void DumpFormats(string[] formats)
 		{
 			Console.WriteLine();
 			ConsoleWrite("Formats: ", ConsoleColor.DarkBlue);
@@ -79,7 +79,21 @@ namespace ClipboardViewer
 				}
 				else if (format == "OneNote 2016 Internal")
 				{
-					content = "<< internal >>";
+					if (saveStreams)
+					{
+						var filename = Path.GetFileNameWithoutExtension(Path.GetRandomFileName())
+							+ $".bin";
+
+						var outpath = Path.Combine(Path.GetTempPath(), filename);
+						using var outstream = new FileStream(outpath, FileMode.CreateNew);
+						outstream.Write(buffer, 0, buffer.Length);
+
+						content = $"<< internal @ {outpath} >>";
+					}
+					else
+					{
+						content = "<< internal >>";
+					}
 				}
 				else
 				{
